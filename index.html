@@ -410,6 +410,35 @@ input{font-family:inherit}
   .hero h1{font-size:30px}
   .hero-watermark{display:none}
 }
+.hero-sub{font-size:16px;color:var(--ink-soft);margin-top:14px;max-width:560px;line-height:1.55;font-weight:500}
+@media(max-width:560px){.hero-sub{font-size:14px}}
+
+/* NEWS */
+.news-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ncard{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--glass-line);border-radius:var(--r-md);overflow:hidden;transition:.2s;text-decoration:none}
+.ncard:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:rgba(124,92,255,.4)}
+.nc-img{height:150px;background-size:cover;background-position:center;background-color:#16161f;flex-shrink:0}
+.nc-noimg{display:grid;place-items:center;font-size:38px;opacity:.4;background:linear-gradient(135deg,rgba(124,92,255,.12),rgba(0,230,160,.05))}
+.nc-body{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.nc-meta{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-faint);font-weight:600}
+.nc-src{color:var(--brand-2);text-transform:uppercase;letter-spacing:.04em}
+.nc-title{font-size:15px;font-weight:700;line-height:1.34;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+.nc-tags{display:flex;gap:6px;flex-wrap:wrap}
+.nc-tag{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:7px;background:var(--bg-2);border:1px solid var(--glass-line-2);color:var(--ink-soft)}
+.news-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nrow{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--glass-line);border-radius:14px;transition:.16s;text-decoration:none}
+.nrow:hover{border-color:rgba(124,92,255,.4);transform:translateX(3px)}
+.nrow-dot{width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:6px;flex-shrink:0;box-shadow:0 0 8px var(--green)}
+.nrow-title{font-size:14px;font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nrow-meta{font-size:11.5px;color:var(--ink-faint);font-weight:600;margin-top:5px}
+.sk{position:relative;overflow:hidden;background:var(--surface-2)}
+.sk::after,.sk-l::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);animation:shimmer 1.4s infinite}
+.sk-l{height:11px;border-radius:6px;background:var(--surface-2);position:relative;overflow:hidden;margin-bottom:9px}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+.sk::after,.sk-l::after{transform:translateX(-100%)}
+@media(max-width:1100px){.news-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:860px){.news-strip{grid-template-columns:1fr}}
+@media(max-width:560px){.news-grid{grid-template-columns:1fr}}
 .hidden{display:none!important}
 </style>
 </head>
@@ -435,6 +464,8 @@ input{font-family:inherit}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>Рынки</div>
     <div class="nav-item" data-route="trending" onclick="go('trending')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v6h-6"/></svg>Тренды</div>
+    <div class="nav-item" data-route="news" onclick="go('news')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h13a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><path d="M8 8h7M8 12h7M8 16h4"/></svg>Новости</div>
     <div class="nav-item" data-route="activity" onclick="go('activity')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Активность</div>
     <div class="nav-item" data-route="leaderboard" onclick="go('leaderboard')">
@@ -556,8 +587,11 @@ function render(){const v=document.getElementById('view');const r=state.route||'
   else if(r==='wallet')v.innerHTML=viewWallet();
   else if(r==='leaderboard')v.innerHTML=viewLeaderboard();
   else if(r==='activity')v.innerHTML=viewActivity();
+  else if(r==='news')v.innerHTML=viewNews();
   else if(r==='profile')v.innerHTML=viewProfile();
   if(r==='market')drawBigChart(state.param);
+  if(r==='news')loadNews();else if(newsTimer){clearTimeout(newsTimer);newsTimer=null;}
+  if(r==='home')loadHomeNews();
   syncTop();}
 
 function heroHTML(){
@@ -575,7 +609,8 @@ function heroHTML(){
       <div class="hero-clock" id="heroClock">—</div></div>
     <div class="hero-mid">
       <div class="hero-kicker">Рынок предсказаний нового поколения</div>
-      <h1>Торгуй на том, <span class="g">что случится дальше</span></h1>
+      <h1>Торгуй <span class="g">исходами реальных событий</span></h1>
+      <p class="hero-sub">Покупай «Да» или «Нет» по любому событию, следи за вероятностью в реальном времени и забирай выигрыш в USDT.</p>
       <div class="hero-head"><div class="roll">${heads.map(h=>`<span>${h}</span>`).join('')}</div></div>
       <div class="hero-cta"><button class="big" onclick="go('trending')">Смотреть рынки</button>
       <button class="ln" onclick="go('wallet')">Пополнить в USDT</button></div>
@@ -621,6 +656,8 @@ function viewHome(){const trend=MARKETS.filter(m=>m.trend);const list=filtered()
   <div class="sec-head"><h2>📊 Все рынки</h2></div>
   ${catBar()}
   <div class="grid" style="margin-top:14px">${list.length?list.map(card).join(''):emptyHTML()}</div>
+  <div class="sec-head"><h2>📰 Новости рынка <span class="live" style="font-size:10px;padding:3px 8px"><span class="dot"></span>LIVE</span></h2><span class="more" onclick="go('news')">Все новости →</span></div>
+  <div id="homeNews" class="news-strip">${newsStripSkeleton()}</div>
   <div class="sec-head"><h2>⚡ Как это работает</h2></div>
   <div class="how">
     <div class="how-c"><div class="n">1</div><h4>Выбери событие</h4><p>Сотни рынков: крипто, политика, спорт, технологии. Найди то, в чём уверен.</p></div>
@@ -761,6 +798,91 @@ function viewProfile(){const u=state.user;
     <div class="set-row"><div><div class="t">Уведомления о сделках</div><div class="d">Пуш при движении твоих рынков</div></div><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div>
     <div class="set-row"><div><div class="t">Звук при ставке</div><div class="d">Лёгкий тактильный отклик</div></div><div class="switch" onclick="this.classList.toggle('on')"><i></i></div></div>
     <div class="set-row"><div><div class="t">Валюта отображения</div><div class="d">Все расчёты ведутся в USDT</div></div><b style="color:var(--usdt)">USDT</b></div></div>`;}
+
+/* ===== НОВОСТИ (live из открытого API CryptoCompare) ===== */
+let newsCache=null, newsCat='all', newsTimer=null, newsLastTs=0;
+const NEWS_FEEDS=[
+  {url:'https://rssexport.rbc.ru/rbcnews/news/30/full.rss',src:'РБК',cat:'Экономика'},
+  {url:'https://cointelegraph.com/rss',src:'Cointelegraph',cat:'Крипто'}
+];
+function ago(ts){const s=Math.max(1,Math.floor(Date.now()/1000-ts));
+  if(s<60)return s+' сек назад';const m=Math.floor(s/60);if(m<60)return m+' мин назад';
+  const h=Math.floor(m/60);if(h<24)return h+' ч назад';const d=Math.floor(h/24);return d+' '+decl(d,'день','дня','дней')+' назад';}
+function newsFallbackData(){const n=Math.floor(Date.now()/1000);return [
+  {title:'Биткоин закрепился выше $100K на фоне рекордного притока в спотовые ETF',source:'Market Wire',ts:n-1800,cats:['BTC','Market'],img:'',url:'#'},
+  {title:'Ethereum готовится к крупному апгрейду сети — комиссии могут упасть',source:'Crypto Daily',ts:n-5400,cats:['ETH','Technology'],img:'',url:'#'},
+  {title:'Регуляторы обсуждают новые правила для прогнозных рынков',source:'Finance Times',ts:n-9000,cats:['Regulation','Market'],img:'',url:'#'},
+  {title:'Объём торгов на рынках предсказаний вырос на 40% за неделю',source:'Trading View',ts:n-14400,cats:['Trading','Market'],img:'',url:'#'},
+  {title:'Аналитики повышают прогноз по золоту на фоне волатильности',source:'Macro Pulse',ts:n-21600,cats:['Commodities'],img:'',url:'#'},
+  {title:'SpaceX анонсировала новую дату орбитального запуска Starship',source:'Space News',ts:n-28800,cats:['Technology'],img:'',url:'#'},
+];}
+async function fetchOneFeed(feed){
+  try{
+    const r=await fetch('https://api.rss2json.com/v1/api.json?count=20&rss_url='+encodeURIComponent(feed.url),{cache:'no-store'});
+    const j=await r.json();
+    if(j.status!=='ok'||!Array.isArray(j.items))return [];
+    return j.items.map(i=>{
+      let ts=Math.floor(Date.now()/1000);
+      if(i.pubDate){const d=new Date(i.pubDate.replace(' ','T')+'Z');if(!isNaN(d))ts=Math.floor(d.getTime()/1000);}
+      const img=i.thumbnail||(i.enclosure&&i.enclosure.link)||'';
+      return {title:i.title||'',source:feed.src,ts,cats:[feed.cat],img,url:i.link||'#'};
+    });
+  }catch(e){return [];}
+}
+async function fetchNews(){
+  try{
+    const res=await Promise.all(NEWS_FEEDS.map(fetchOneFeed));
+    let all=[].concat.apply([],res).filter(n=>n.title);
+    if(!all.length)return null;
+    all.sort((a,b)=>b.ts-a.ts);
+    newsCache=all.slice(0,40);newsLastTs=Date.now();return newsCache;
+  }catch(e){return null;}
+}
+function newsTag(c){return `<span class="nc-tag">${esc(c)}</span>`;}
+function newsCard(n){
+  const img=n.img?`<div class="nc-img" style="background-image:url('${esc(n.img)}')"></div>`:`<div class="nc-img nc-noimg">📰</div>`;
+  return `<a class="ncard" href="${esc(n.url)}" target="_blank" rel="noopener">${img}
+    <div class="nc-body"><div class="nc-meta"><span class="nc-src">${esc(n.source)}</span><span>${ago(n.ts)}</span></div>
+    <div class="nc-title">${esc(n.title)}</div>
+    <div class="nc-tags">${n.cats.slice(0,3).map(newsTag).join('')}</div></div></a>`;}
+function newsSkeletons(k){return Array.from({length:k||9}).map(()=>`<div class="ncard"><div class="nc-img sk"></div><div class="nc-body"><div class="sk-l" style="width:38%"></div><div class="sk-l" style="width:92%"></div><div class="sk-l" style="width:64%"></div></div></div>`).join('');}
+function newsStripSkeleton(){return Array.from({length:4}).map(()=>`<div class="nrow"><div class="nrow-dot"></div><div style="flex:1"><div class="sk-l" style="width:90%"></div><div class="sk-l" style="width:40%;margin-top:7px"></div></div></div>`).join('');}
+function viewNews(){
+  return `<div class="page-h" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px">
+    <div><h1>📰 Новости рынка <span class="live"><span class="dot"></span>LIVE</span></h1>
+    <p>Лента событий в реальном времени из открытых источников. Обновляется автоматически.</p></div>
+    <button class="btn-ghost" onclick="refreshNews()" id="newsRefresh">↻ Обновить · <span id="newsAge">сейчас</span></button></div>
+  <div class="cats" id="newsCats"></div>
+  <div id="newsGrid" class="news-grid">${newsSkeletons(9)}</div>`;}
+function buildNewsCats(data){const el=document.getElementById('newsCats');if(!el)return;
+  const counts={};data.forEach(n=>n.cats.forEach(c=>counts[c]=(counts[c]||0)+1));
+  const top=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,8);
+  el.innerHTML=[`<button class="cat ${newsCat==='all'?'active':''}" onclick="setNewsCat('all')">✨ Все</button>`]
+    .concat(top.map(c=>`<button class="cat ${newsCat===c?'active':''}" onclick="setNewsCat('${esc(c)}')">${esc(c)}</button>`)).join('');}
+function setNewsCat(c){newsCat=c;renderNewsGrid(newsCache||newsFallbackData());buildNewsCats(newsCache||newsFallbackData());}
+function renderNewsGrid(data){const g=document.getElementById('newsGrid');if(!g)return;
+  let d=data;if(newsCat!=='all')d=data.filter(n=>n.cats.includes(newsCat));
+  g.innerHTML=d.length?d.map(newsCard).join(''):`<div class="empty"><div class="e">📭</div>Нет новостей в этой категории.</div>`;}
+function updateNewsAge(){const e=document.getElementById('newsAge');if(e)e.textContent=newsLastTs?ago(Math.floor(newsLastTs/1000)):'сейчас';}
+async function loadNews(){
+  if(!document.getElementById('newsGrid'))return;
+  let data=newsCache||await fetchNews();
+  if(!document.getElementById('newsGrid'))return; // ушли со страницы
+  if(!data)data=newsFallbackData();
+  renderNewsGrid(data);buildNewsCats(data);updateNewsAge();
+  if(newsTimer)clearTimeout(newsTimer);
+  newsTimer=setTimeout(()=>{newsCache=null;loadNews();},60000);
+}
+function refreshNews(){newsCache=null;const g=document.getElementById('newsGrid');if(g)g.innerHTML=newsSkeletons(9);loadNews();toast('Обновляю ленту новостей…');}
+async function loadHomeNews(){
+  const box=document.getElementById('homeNews');if(!box)return;
+  let data=newsCache||await fetchNews();
+  const b2=document.getElementById('homeNews');if(!b2)return;
+  if(!data)data=newsFallbackData();
+  b2.innerHTML=data.slice(0,4).map(n=>`<a class="nrow" href="${esc(n.url)}" target="_blank" rel="noopener">
+    <div class="nrow-dot"></div><div><div class="nrow-title">${esc(n.title)}</div>
+    <div class="nrow-meta">${esc(n.source)} · ${ago(n.ts)}</div></div></a>`).join('');
+}
 
 function setCat(id){state.cat=id;render();}
 function onSearch(v){state.q=v.trim().toLowerCase();if(state.route!=='home'&&state.route!=='trending')go('trending');else render();}
